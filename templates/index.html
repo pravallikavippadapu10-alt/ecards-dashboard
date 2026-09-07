@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HHCL eCards Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-shell">
+  <aside class="module-sidebar" aria-label="Dashboard modules">
+    <div class="sidebar-brand"><span class="brand-symbol">◇</span><div><strong>HHCL</strong><small>ECARDS INTELLIGENCE</small></div></div>
+    <div class="sidebar-rule"></div>
+    <p class="module-label">MODULES</p>
+    <nav class="module-nav">
+      <button class="module-link active" data-view="overview"><span class="module-icon">▥</span><span>Executive overview</span><b>Live</b></button>
+      <button class="module-link" data-view="division"><span class="module-icon">▦</span><span>Divisions</span></button>
+      <button class="module-link" data-view="operations"><span class="module-icon">◫</span><span>Operations</span></button>
+      <button class="module-link" data-view="audience"><span class="module-icon">♙</span><span>Audience</span></button>
+      <button class="module-link" data-view="catalog"><span class="module-icon">▤</span><span>Campaign catalog</span></button>
+    </nav>
+    <div class="sidebar-status"><i></i><div><strong>Real-time data</strong><small>MySQL connected</small></div></div>
+  </aside>
+  <div class="dashboard-workspace">
+  <nav class="navbar navbar-dark app-nav">
+    <div class="container-fluid px-4">
+      <span class="navbar-brand fw-semibold">Enterprise intelligence <span>/ HHCL eCards</span></span>
+      <span class="nav-status"><i></i> XAMPP MySQL · Live</span>
+    </div>
+  </nav>
+  <main class="container-fluid px-4 py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div><p class="eyebrow mb-1">Campaign intelligence</p><h1 id="pageTitle">Analytics dashboard</h1><p id="pageSubtitle" class="text-secondary mb-0">Poster generation activity across campaigns and regions.</p></div>
+      <div class="view-switcher" role="tablist" aria-label="Dashboard views"><button id="overviewView" class="view-button active" role="tab">Overview</button><button id="divisionView" class="view-button" role="tab">Division analysis</button><button id="operationsView" class="view-button" role="tab">Operations</button><button id="audienceView" class="view-button" role="tab">Audience</button><button id="catalogView" class="view-button" role="tab">Catalog</button><button id="downloadCsv" class="btn btn-dark"><span class="me-2">↓</span>Download CSV</button></div>
+    </div>
+    <section id="filterBar" class="filter-bar mb-4">
+      <div class="campaign-select"><label for="campaignFilter">Campaign portfolio</label><select id="campaignFilter" class="form-select"><option>All campaigns</option></select></div>
+      <div><label for="startDate">From</label><input id="startDate" class="form-control" type="date"></div>
+      <div><label for="endDate">To</label><input id="endDate" class="form-control" type="date"></div>
+      <button id="resetFilters" class="btn btn-outline-secondary align-self-end"><span aria-hidden="true">↺</span> Reset filters</button>
+    </section>
+    <section class="campaign-banner mb-4">
+      <div><span class="eyebrow">Selected campaign</span><h2 id="campaignName">All campaigns</h2><p id="campaignDescription">A combined view of poster generation activity.</p></div>
+      <div class="campaign-pulse"><span>Peak region</span><strong id="peakRegion">—</strong></div>
+    </section>
+    <div id="error" class="alert alert-danger d-none"></div>
+    <section id="overviewContent">
+    <section class="row g-3 mb-4">
+      <div class="col-12 col-md-6 col-xl-3"><div class="metric"><span>Generated posters</span><strong id="posterCount">—</strong><small>Current selection</small></div></div>
+      <div class="col-12 col-md-6 col-xl-3"><div class="metric"><span>Unique doctors</span><strong id="doctorCount">—</strong><small>Distinct profiles</small></div></div>
+      <div class="col-12 col-md-6 col-xl-3"><div class="metric"><span>Campaigns</span><strong id="campaignCount">—</strong><small>Configured campaigns</small></div></div>
+      <div class="col-12 col-md-6 col-xl-3"><div class="metric"><span>Active cards</span><strong id="cardCount">—</strong><small>Available templates</small></div></div>
+    </section>
+    <section class="row g-3 mb-4">
+      <div class="col-12 col-xl-7"><div class="panel"><div class="panel-heading"><h2>Poster activity</h2><span id="dateSummary"></span></div><canvas id="activityChart"></canvas></div></div>
+      <div class="col-12 col-xl-5"><div class="panel"><div class="panel-heading"><h2>Posters by region</h2></div><canvas id="regionChart"></canvas></div></div>
+    </section>
+    <section class="row g-3 mb-4"><div class="col-12"><div class="panel"><div class="panel-heading"><h2>Top campaigns</h2></div><canvas id="campaignChart"></canvas></div></div></section>
+    <section class="panel"><div class="panel-heading"><h2>Poster records</h2><span id="recordSummary"></span></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Created</th><th>Campaign</th><th>Card</th><th>Region</th><th>Employee</th><th>Doctor</th><th>Type</th></tr></thead><tbody id="records"></tbody></table></div></section>
+    </section>
+    <section id="divisionContent" class="division-content d-none">
+      <section class="filter-bar division-filter-bar mb-4">
+        <div class="division-select"><label for="divisionFilter">Division <span id="divisionFilterSummary" class="filter-summary">25 available</span></label><select id="divisionFilter" class="form-select"><option value="All divisions">All divisions</option></select></div>
+        <div><label for="divisionCampaignFilter">Division campaigns</label><select id="divisionCampaignFilter" class="form-select"><option value="All campaigns">All campaigns</option></select></div>
+        <div><label for="divisionStartDate">From</label><input id="divisionStartDate" class="form-control" type="date"></div>
+        <div><label for="divisionEndDate">To</label><input id="divisionEndDate" class="form-control" type="date"></div>
+        <button id="divisionResetFilters" class="btn btn-outline-secondary align-self-end"><span aria-hidden="true">↺</span> Reset filters</button>
+      </section>
+      <div class="division-heading"><div><p class="eyebrow mb-1">Organizational view</p><h2>Division performance</h2><p>Compare poster output and campaign reach across every division.</p></div><div class="division-total"><span>Active divisions</span><strong id="divisionCount">—</strong></div></div>
+      <section class="row g-3 mb-4"><div class="col-12 col-xl-7"><div class="panel"><div class="panel-heading"><h2>Posters by division</h2><span>All selected records</span></div><canvas id="divisionChart"></canvas></div></div><div class="col-12 col-xl-5"><div class="panel"><div class="panel-heading"><h2>Division share</h2><span>Volume mix</span></div><canvas id="divisionShareChart"></canvas></div></div></section>
+      <section class="panel"><div class="panel-heading"><h2>Division campaign matrix</h2><span>Top campaigns per division</span></div><canvas id="divisionCampaignChart"></canvas></section>
+      <section class="panel division-directory"><div class="panel-heading"><h2>Division directory</h2><span>Configured status and conducted campaigns</span></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Division</th><th>Status</th><th>Posters</th><th>Campaigns conducted</th></tr></thead><tbody id="divisionRecords"></tbody></table></div></section>
+    </section>
+    <section id="operationsContent" class="analytics-page d-none">
+      <div class="page-intro"><p class="eyebrow mb-1">Production intelligence</p><h2>Operations</h2><p>Understand when output happens, what formats drive it, and where execution is concentrated.</p></div>
+      <section class="row g-3 mb-4"><div class="col-12 col-xl-7"><div class="panel"><div class="panel-heading"><h2>Monthly poster output</h2><span>All generated posters</span></div><canvas id="operationsMonthlyChart"></canvas></div></div><div class="col-12 col-xl-5"><div class="panel"><div class="panel-heading"><h2>Output status</h2><span>Record health</span></div><canvas id="operationsStatusChart"></canvas></div></div></section>
+      <section class="row g-3 mb-4"><div class="col-12 col-xl-6"><div class="panel"><div class="panel-heading"><h2>Top card types</h2><span>Most used formats</span></div><canvas id="operationsCardChart"></canvas></div></div><div class="col-12 col-xl-6"><div class="panel"><div class="panel-heading"><h2>Output by source</h2><span>All poster and card tables</span></div><canvas id="operationsSourceChart"></canvas></div></div></section>
+      <section class="panel"><div class="panel-heading"><h2>Top employees by output</h2><span>Generated poster records</span></div><canvas id="operationsEmployeeChart"></canvas></section>
+    </section>
+    <section id="audienceContent" class="analytics-page d-none">
+      <div class="page-intro"><p class="eyebrow mb-1">Audience intelligence</p><h2>Doctor &amp; service coverage</h2><p>See which specialties and services are represented across the doctor-facing workflow.</p></div>
+      <section id="audienceSummary" class="row g-3 mb-4"></section>
+      <section class="row g-3"><div class="col-12 col-xl-7"><div class="panel"><div class="panel-heading"><h2>Doctor specialties</h2><span>Generated poster profiles</span></div><canvas id="audienceSpecialtyChart"></canvas></div></div><div class="col-12 col-xl-5"><div class="panel"><div class="panel-heading"><h2>Service interests</h2><span>Captured preferences</span></div><canvas id="audienceServiceChart"></canvas></div></div></section>
+    </section>
+    <section id="catalogContent" class="analytics-page d-none">
+      <div class="page-intro"><p class="eyebrow mb-1">Configuration intelligence</p><h2>Campaign catalog readiness</h2><p>Review campaign windows, card coverage, active templates, and form configuration in one place.</p></div>
+      <section id="catalogSummary" class="row g-3 mb-4"></section>
+      <section class="panel"><div class="panel-heading"><div><h2>Campaign readiness directory</h2><span>Joined from campaigns, cards, and form fields</span></div><select id="catalogStatusFilter" class="form-select catalog-status-filter"><option value="all">All statuses</option><option value="active">Active only</option><option value="incomplete">Needs attention</option></select></div><div class="table-responsive catalog-table"><table class="table align-middle mb-0"><thead><tr><th>Campaign</th><th>Division</th><th>Window</th><th>Cards</th><th>Active cards</th><th>Forms</th><th>Readiness</th></tr></thead><tbody id="catalogRecords"></tbody></table></div></section>
+    </section>
+  </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
