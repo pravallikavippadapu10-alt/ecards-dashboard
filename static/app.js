@@ -4,6 +4,7 @@ let charts = {};
 let analytics = null;
 let currentView = 'overview';
 let dashboardLoaded = false;
+const REFRESH_INTERVAL_MS = 30000;
 
 const byId = (id) => document.getElementById(id);
 const clean = (value) => value || 'Unknown';
@@ -227,6 +228,7 @@ function loadDashboardData() {
 }
 
 loadDashboardData();
+setInterval(loadDashboardData, REFRESH_INTERVAL_MS);
 
 ['startDate', 'endDate'].forEach((id) => byId(id).addEventListener('change', render));
 byId('campaignFilter').addEventListener('change', () => selectCampaign(byId('campaignFilter').value));
